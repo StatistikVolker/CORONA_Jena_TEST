@@ -17,9 +17,10 @@ dftsI_TH <- dftsI %>% filter(county == "SK Leipzig" | Bundesland == "Thüringen"
   rename(i = infected)
 
 
+fltcounty <- "SK Gera"
+dfestR <- dftsI_TH %>% filter(county == fltcounty )
 
-dfestR <- dftsI_TH %>% filter(county == "SK Leipzig" )
-
+dfestdat <- dfestR %>% select(Datum, id)
 
 #------------------------------------------------------------------------------------
 # Reproduktionszahl für 7 Tage Intervalle
@@ -36,16 +37,21 @@ estR7 <- estimate_R(dfestR$i,
                       si_distr = dfestR$ip))
 )
 
+dfestR7 <- estR7$R %>% left_join(dfestdat)
+
+
 #p<-plot(res_parametric_si, legend = FALSE,what = "R", options_R = list(col = "darkred",size = 2));p
-p<-plot(estR7, legend = FALSE,what = "R", options_R = list(col = "darkred",size = 2));p
 p<-plot(estR7, legend = FALSE,what = "incid", options_R = list(col = "darkred",size = 2));p
+p<-plot(estR7, legend = FALSE,what = "R", options_R = list(col = "darkred",size = 2));p
 
 p + theme_minimal() +
   guides(color = FALSE, fill = FALSE) +
-  theme(axis.text = element_text(size = 16),
+  theme(axis.text.y = element_text(size = 16),
         axis.title = element_text(size = 20),
         plot.title = element_text(size = 25,face = "bold")
   ) +
   labs(y = "Reproduktionszahl, gesch\u00E4tzt",
-       title = "Reproduktionszahl in Leipzig - 7 Tages Intervall",
-       x = "Tage seit erstem Fall")
+       title = paste0("Reproduktionszahl in ",fltcounty," - 7 Tages Intervall"),
+       x = "Tage seit erstem Fall") +
+  scale_x_continuous(breaks = seq(min(dfestdat$id),max(dfestdat$id), 7),
+                     label = format(dfestdat$Datum[seq(min(dfestdat$id),max(dfestdat$id), 7)], format="%d-%m"))
